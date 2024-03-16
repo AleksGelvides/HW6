@@ -1,0 +1,30 @@
+version: "3"
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      # Уникальный идентификатор брокера Kafka в кластере. Каждый брокер должен иметь уникальный идентификатор
+      KAFKA_BROKER_ID: 1
+      # Адрес Zookeeper кластера
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Указывает уровень журналирования в Kafka и какие части приложения нужно логировать
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO, kafka.producer.async.DefaultEventHandler=INFO, state.change.logger=INFO"
+      # Адрес и порт, который будет объявлен в метаданных кафка и доступен для клиентов Kafka.
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://$DOCKERHOST:9092
+      # Свойство определяет пары ключ/значения для прослушивания. На данный момент протокол безопасновсти - простой текст
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      # Указывает сколько клиентов будет создано для топика
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      # Указывает следует ли создавать топики при отправке сообщения на несуществующие топики
+      KAFKA_AUTO_CREATE_TOPIC_ENABLE: "true"
